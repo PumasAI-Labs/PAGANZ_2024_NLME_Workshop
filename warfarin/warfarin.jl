@@ -1,3 +1,4 @@
+# Pumas Docs: https://docs.pumas.ai/stable/
 using Pumas, CSV, DataFrames, DataFramesMeta, PumasUtilities, AlgebraOfGraphics, CategoricalArrays, Random, CairoMakie
 const AOG = AlgebraOfGraphics
 
@@ -191,6 +192,10 @@ insp_df = DataFrame(insp)
     :SEXC = recode(:SEX, 0 => "female", 1 => "male")
 end
 
+## AlgebraOfGraphics ##
+# Tutorials: https://tutorials.pumas.ai/html/PlottingInJulia/
+# Docs: https://aog.makie.org/stable/
+
 plt_df_conc = dropmissing(insp_df, [:conc])
 data(plt_df_conc) * mapping(
     :conc_ipred => "Individual prediction",
@@ -212,12 +217,25 @@ data(plt_df_pca) * mapping(
     visual(AOG.Scatter)
 ) |> draw
 
+# Docs: https://docs.pumas.ai/dev/docstrings/pumasplots_docstrings/
 # Observation plots
 observations_vs_time(insp)
 observations_vs_time(pop[1])
 observations_vs_time(pop)
 
 # Prediction plots
+subject_fits(
+    insp,
+    separate = true,
+    ids = unique(df2.ID)[1:12],
+    observations = [:conc],
+)
+subject_fits(
+    insp,
+    separate = true,
+    ids = unique(df2.ID)[1:12],
+    observations = [:pca],
+)
 observations_vs_predictions(insp)
 observations_vs_ipredictions(insp)
 
