@@ -7,7 +7,7 @@ end
 # Current working directory
 pwd()
 
-df = CSV.read("tgd-os/tgd-os.csv", DataFrame; missingstring=[".", ""])
+df = CSV.read("tgd-os/tgd-os2.csv", DataFrame; missingstring=[".", ""])
 tgd_os_pop = read_pumas(
     df,
     observations = [:SLD, :Death],
@@ -18,19 +18,19 @@ tgd_os_pop = read_pumas(
 tgd_os_model = @model begin
     @param begin
         # Typical values of the coefficients of the predictors of SLD
-        β ∈ VectorDomain(2, init = [0.01, 0.01])
+        β ∈ VectorDomain(2, init = [1.0, -1.0])
         # IIV of the coefficients of the predictors of SLD
-        Ω ∈ PSDDomain(init = [0.1 0.0; 0.0 0.1])
+        Ω ∈ PSDDomain(init = [16.0 0.0; 0.0 1.0])
         # SLD residual error
         σ ∈ RealDomain(lower = 0.0, init = 1.0)
 
         # Log logistic hazard function parameters
         h0 ∈ RealDomain(lower = 0.0, init = 0.001)
-        κ ∈ RealDomain(; lower=0.0, init = 0.01)
+        κ ∈ RealDomain(; lower=0.0, init = 1.1)
         # Effect of SLD on hazard
         α ∈ RealDomain(init = 0.001)
         # Coefficients of all the other predictors of hazard
-        γ ∈ VectorDomain(2)
+        γ ∈ VectorDomain(2, init = [0.01, 0.01])
     end
     @random begin
         η ~ MvNormal(Ω)
@@ -73,3 +73,22 @@ validation_ll = loglikelihood(
   coef(fpm),
   LaplaceI(),
 )
+
+# Data generation code
+# using DataFramesMeta
+# new_sims = map(tgd_os_pop) do s
+#     simobstte(tgd_os_model, s, coef(fpm), maxT = max(s.time[end], rand() * maximum(df.time) / 1.1))
+# end
+# findall(new_sims) do s
+#     v = Subject(s).observations.Death[end]; !ismissing(v) && v == 0
+# end
+# newdf = DataFrame(Subject.(new_sims))
+# newdf = @rsubset newdf :evid == 0
+# newdf = newdf[:, [:id, :time, :SLD, :Death, :WT, :AGE, :SEX]]
+# CSV.write("tgd-os3.csv", newdf)
+# tgd_os_pop = read_pumas(
+#     newdf,
+#     observations = [:SLD, :Death],
+#     covariates = [:WT, :AGE, :SEX],
+#     event_data = false,
+# )
