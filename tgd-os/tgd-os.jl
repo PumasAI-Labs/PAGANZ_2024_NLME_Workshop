@@ -73,22 +73,3 @@ validation_ll = loglikelihood(
   coef(fpm),
   LaplaceI(),
 )
-
-# Data generation code
-# using DataFramesMeta
-# new_sims = map(tgd_os_pop) do s
-#     simobstte(tgd_os_model, s, coef(fpm), maxT = max(s.time[end], rand() * maximum(df.time) / 1.1))
-# end
-# findall(new_sims) do s
-#     v = Subject(s).observations.Death[end]; !ismissing(v) && v == 0
-# end
-# newdf = DataFrame(Subject.(new_sims))
-# newdf = @rsubset newdf :evid == 0
-# newdf = newdf[:, [:id, :time, :SLD, :Death, :WT, :AGE, :SEX]]
-# CSV.write("tgd-os3.csv", newdf)
-# tgd_os_pop = read_pumas(
-#     newdf,
-#     observations = [:SLD, :Death],
-#     covariates = [:WT, :AGE, :SEX],
-#     event_data = false,
-# )
