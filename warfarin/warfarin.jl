@@ -408,6 +408,18 @@ inf = infer(fpm) # fails
 # Bootstrap
 bts_inf = infer(fpm, Bootstrap(samples = 20))
 
+# Fixing the omegas which may not be well identifiable
+fpm_inf = fit(
+    model,
+    pop,
+    coef(fpm),
+    FOCE();
+    init_randeffs = empirical_bayes(fpm),
+    constantcoef = (:pk_Ω, :lag_ω, :pd_Ω),
+    optim_options = (; iterations = 0)
+)
+inf = infer(fpm_inf)
+
 ## Simulation ##
 
 # Sample random effects from their priors
