@@ -148,7 +148,7 @@ model = @model begin
         pca  ~ @. Normal(Turnover, σ_fx)
     end
 end
-
+model.desc
 lat = latexify(model, :dynamics)
 render(lat)
 
