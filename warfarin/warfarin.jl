@@ -1,5 +1,5 @@
 # Pumas Docs: https://docs.pumas.ai/stable/
-using Pumas, CSV, DataFrames, DataFramesMeta, PumasUtilities, AlgebraOfGraphics, CategoricalArrays, Random, CairoMakie
+using Pumas, CSV, DataFrames, DataFramesMeta, PumasUtilities, AlgebraOfGraphics, CategoricalArrays, Random, CairoMakie, Latexify
 const AOG = AlgebraOfGraphics
 
 ## Data wrangling ##
@@ -85,11 +85,11 @@ model = @model begin
         """
         pd_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01, 0.01]) 
         # Residual variability
-        "Proportional Residual Error"
+        "Proportional residual error for drug concentration"
         σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
-        "Additive Residual Error (mg/L)"
+        "Additive residual error for drug concentration (mg/L)"
         σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
-        "Additive Error for FX"
+        "Additive error for PCA"
         σ_fx     ∈ RealDomain(lower = 0.0, init = 0.01) 
     end
 
@@ -142,12 +142,15 @@ model = @model begin
     end
 
     @derived begin
-        "Warfaring Concentration (mg/L)"
+        "Warfarin Concentration (mg/L)"
         conc ~ @. Normal(cp, sqrt((σ_prop * cp)^2 + σ_add^2))
         "PCA"
         pca  ~ @. Normal(Turnover, σ_fx)
     end
 end
+
+lat = latexify(model, :dynamics)
+render(lat)
 
 ## Fit ##
 
@@ -294,7 +297,7 @@ subject_fits(
     ids = unique(df2.ID)[1:12],
     observations = [:pca],
     facet=(combinelabels=true,)
-)
+)   
 observations_vs_predictions(insp)
 observations_vs_ipredictions(insp)
 
