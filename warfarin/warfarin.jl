@@ -166,6 +166,24 @@ fpm_laplace = fit(
     constantcoef = (lag_ω = 0.0,)
 )
 
+# Plot the conditional log likelihood wrt lag_η
+function ll_func(lag_η, i)
+    s = pop[i]
+    return -Pumas.conditional_nll(
+        model,
+        s,
+        coef(fpm),
+        (pk_η = zeros(3), lag_η = lag_η, pd_η = zeros(4)),
+    )
+end
+
+subj_ind = 3
+lag_η = -1.0:0.01:5.0
+lag_plt = data((lag_η = lag_η, ll = ll_func.(lag_η, subj_ind))) * 
+    mapping(:lag_η, :ll => "Conditional log likelihood of subject $subj_ind") * 
+    AOG.visual(Lines) |> draw
+# save("./supporting_material/lag_plt.png", lag_plt)
+
 OFV_laplace = (-2 * loglikelihood(fpm_laplace) - n * log(2π))
 
 ## Visual predictive check ##
