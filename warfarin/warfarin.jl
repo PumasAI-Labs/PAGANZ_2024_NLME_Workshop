@@ -51,23 +51,46 @@ pop = read_pumas(
 model = @model begin
     @param begin
         # PK parameters
-        pop_CL   ∈ RealDomain(lower = 0.0, init = 0.134) # L/h/70kg
-        pop_V    ∈ RealDomain(lower = 0.0, init = 8.11)  # L/70kg
-        pop_tabs ∈ RealDomain(lower = 0.0, init = 0.523) # h
-        pop_lag  ∈ RealDomain(lower = 0.0, init = 0.1)   # h
+        "Clearance (L/h/70kg)"
+        pop_CL   ∈ RealDomain(lower = 0.0, init = 0.134) 
+        "Central Volume L/70kg"
+        pop_V    ∈ RealDomain(lower = 0.0, init = 8.11)  
+        "Absorption time (h)"
+        pop_tabs ∈ RealDomain(lower = 0.0, init = 0.523) 
+        "Lag time (h)"
+        pop_lag  ∈ RealDomain(lower = 0.0, init = 0.1)   
         # PD parameters
+        "Baseline"
         pop_e0   ∈ RealDomain(lower = 0.0, init = 100.0)
+        "Emax"
         pop_emax ∈ RealDomain(init = -1.0)
+        "EC50"
         pop_c50  ∈ RealDomain(lower = 0.0, init = 1.0)
+        "Turnover"
         pop_tover  ∈ RealDomain(lower = 0.0, init = 14.0)
         # Inter-individual variability
-        pk_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01]) # unitless
+        """
+        - ΩCL
+        - ΩVc
+        - ΩTabs
+        """
+        pk_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01])
+        "Ωlag"
         lag_ω    ∈ RealDomain(lower = 0.0, init = 0.1) # unitless
-        pd_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01, 0.01]) # unitless
+        """
+        - Ωe0
+        - Ωemax
+        - Ωec50
+        - Ωturn
+        """
+        pd_Ω     ∈ PDiagDomain([0.01, 0.01, 0.01, 0.01]) 
         # Residual variability
-        σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752) # unitless
-        σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661) # mg/L
-        σ_fx     ∈ RealDomain(lower = 0.0, init = 0.01) # unitless
+        "Proportional Residual Error"
+        σ_prop   ∈ RealDomain(lower = 0.0, init = 0.00752)
+        "Additive Residual Error (mg/L)"
+        σ_add    ∈ RealDomain(lower = 0.0, init = 0.0661)
+        "Additive Error for FX"
+        σ_fx     ∈ RealDomain(lower = 0.0, init = 0.01) 
     end
 
     @random begin
@@ -119,7 +142,9 @@ model = @model begin
     end
 
     @derived begin
+        "Warfaring Concentration (mg/L)"
         conc ~ @. Normal(cp, sqrt((σ_prop * cp)^2 + σ_add^2))
+        "PCA"
         pca  ~ @. Normal(Turnover, σ_fx)
     end
 end
@@ -142,6 +167,7 @@ fpm = fit(
 )
 coef(fpm)
 coeftable(fpm)
+coefficients_table(fpm)
 ics = icoef(fpm)
 ebes = empirical_bayes(fpm)
 
@@ -188,19 +214,32 @@ OFV_laplace = (-2 * loglikelihood(fpm_laplace) - n * log(2π))
 
 ## Visual predictive check ##
 
-vpc_res_conc = vpc(fpm; observations = [:conc])
-vpc_plot(
+vpc_res_conc = vpc(fpm; 
+                    observations = [:conc],
+                    ensemblealg = EnsembleThreads())
+warf_vpc = vpc_plot(
     vpc_res_conc;
     simquantile_medians = true,
     observations = false,
+    axis = (xlabel = "Time (h)", ylabel = "Warfarin Concentration (mg/L)",
+            xticks = 0:12:120)
 )
+figurelegend(warf_vpc, position = :b, orientation = :horizontal, nbanks = 3, tellwidth = true)
+warf_vpc
 
-vpc_res_pca = vpc(fpm; observations = [:pca])
-vpc_plot(
+vpc_res_pca = vpc(fpm; 
+                  observations = [:pca],
+                  ensemblealg = EnsembleThreads())
+
+pca_vpc = vpc_plot(
     vpc_res_pca;
     simquantile_medians = true,
     observations = false,
+    axis=(xlabel="Time (h)", ylabel="PCA",
+        xticks=0:12:150)
 )
+figurelegend(pca_vpc, position=:b, orientation=:horizontal, nbanks=3, tellwidth=true)
+pca_vpc
 
 ## Model diagnostics ##
 
@@ -247,12 +286,14 @@ subject_fits(
     separate = true,
     ids = unique(df2.ID)[1:12],
     observations = [:conc],
+    facet = (combinelabels = true, )
 )
 subject_fits(
     insp,
     separate = true,
     ids = unique(df2.ID)[1:12],
     observations = [:pca],
+    facet=(combinelabels=true,)
 )
 observations_vs_predictions(insp)
 observations_vs_ipredictions(insp)
