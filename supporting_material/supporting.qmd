@@ -1,0 +1,525 @@
+---
+title: "PAGANZ 2024 Pumas Workshop"
+author: 
+  - Mohamed Tarek
+institute: 
+  - \inst{1} PumasAI Inc.
+  - \inst{2} University of Sydney Business School
+format:
+    beamer:
+        aspectratio: 32
+        navigation: horizontal
+        theme: Antibes
+        header-includes: |
+            \logo{
+            \includegraphics[width=2cm]{./figures/Pumas_AI_Primary_Black_1098x398.png}
+            }
+            \titlegraphic{\includegraphics[width=0.4\paperwidth]{./figures/Pumas_AI_Primary_Black_1098x398.png}}
+---
+
+# NLME fitting algorithms
+
+## NLME Notation
+
+Assume there are 3 subjects
+
+![](./figures/nlme.jpg){width=350 fig-align="center"}
+
+## NLME Notation
+
+![](./figures/pumas_nlme.jpg){width=200 fig-align="center"}
+
+## NLME Notation
+
+::: {.incremental}
+
+- $\theta$: all the population parameters (typical values, BSV, BOV and residual variability)
+\vspace{3mm}
+- $\eta_i$: random effects of subject $i$
+\vspace{3mm}
+- $N$: number of subjects
+\vspace{3mm}
+- $\eta = \{ \eta_i, \, \forall i \in 1 \dots N \}$: random effects of all the subjects
+\vspace{3mm}
+- $y_i$: observations of subject $i$
+\vspace{3mm}
+- $x_i$: covariates of subject $i$
+
+:::
+
+---
+
+## NLME Notation
+
+::: {.incremental}
+
+- $p(y = y_i \mid \theta = \theta, \eta = \eta_i, x = x_i) = p(y_i \mid \theta, \eta_i, x_i)$: likelihood of $(\theta, \eta_i)$ given subject $i$'s data $(x_i, y_i)$. Also known as the conditional probability of $y_i$ given $\theta, \eta_i, x_i$. Or just the conditional likelihood of $\eta_i$ given $\theta$ and $(x_i, y_i)$.
+\vspace{3mm}
+- $p(\eta = \eta_i \mid \theta = \theta) = p(\eta_i \mid \theta)$: prior probability of the random effects $\eta_i$ given the population parameters $\theta$.
+\vspace{3mm}
+- $p(y = y_i \mid \theta = \theta, x = x_i) = p(y_i \mid \theta, x_i) = \int p(y_i \mid \theta, \eta_i, x_i) \cdot p(\eta_i \mid \theta) \, d\eta_i$: marginal likelihood of $\theta$ given subject $i$'s data $y_i$.
+
+:::
+
+## Marginal likelihood maximization
+
+$$
+\begin{aligned}
+\theta^* & = \arg max_\theta \prod_{i=1}^N p(y_i \mid \theta, x_i) \\
+& = \arg max_\theta \prod_{i=1}^N \int p(y_i \mid \theta, \eta_i, x_i) \cdot p(\eta_i \mid \theta) \, d\eta_i \\
+\text{EBE}_i & = \eta_i^* = \arg max_{\eta_i} \Big( p(y_i \mid \theta = \theta^*, \eta_i, x_i) \cdot p(\eta_i \mid \theta = \theta^*) \Big)
+\end{aligned}
+$$
+
+## General Laplace method
+
+\vspace{-2mm}
+$$
+\int f(\eta) \, d\eta \approx f(\eta^*) \sqrt{(2\pi)^m / |-H|}
+$$
+\vspace{-2mm}
+
+- $f$: a positive scalar-valued functon of $\eta$
+\vspace{3mm}
+- $\eta$: vector of $m$ integration variables
+\vspace{3mm}
+- $\eta^*$: global maximizer of $\log f$, $\frac{d\log f}{d\eta}(\eta^*) = 0$
+\vspace{3mm}
+- $H$: second derivative matrix of $\log f$ wrt $\eta$ at $\eta^*$, must be negative definite at $\eta = \eta^*$
+\vspace{3mm}
+- $|-H|$: determinant of $-H$
+
+---
+
+## NLME Laplace method
+
+Laplace uses a second order Taylor series approximation of $\log f$ at $\eta^*$.
+
+![](./figures/laplace_method.png){fig-align="center" width=280}
+
+---
+
+## NLME Laplace method
+
+Consider the 2 local maximizers $\eta_1$ (lower peak) and $\eta_2$ (higher peak).
+$$
+\begin{aligned}
+c & = \log f(\eta_2) - \log f(\eta_1) \\
+n \cdot c & = n \cdot (\log f(\eta_2) - \log f(\eta_1)) \\
+e^{n \cdot c} & = f(\eta_2)^n / f(\eta_1)^n
+\end{aligned}
+$$
+
+### Summary
+
+Approximation error of $n \cdot \log f$ away from the mode $\eta^*$ is not significant as $n$ increases.
+
+---
+
+## NLME Laplace method
+
+- There are $N$ functions $\{ f_i: i = 1 \dots N \}$ to be integrated, one for each subject
+- $f_i(\eta_i) = p(y_i \mid \theta, \eta_i, x_i) \cdot p(\eta_i \mid \theta)$
+- Laplace method
+$$
+\int f_i(\eta_i) \, d\eta_i = f_i(\text{EBE}_i) \sqrt{(2\pi)^m / |-H_i|}
+$$
+
+- $H_i$: second derivative matrix of $\log f_i$ wrt $\eta_i$ at $\text{EBE}_i$, must be negative definite at $\eta_i = \text{EBE}_i$
+
+## General FOCE(I)
+
+FOCE(I) approximates the Hessian $H_i$ for each subject $i$. Assume the following:
+
+$$
+\begin{aligned}
+\log f_i(\eta_i) & = \log p(y_i \mid \theta, \eta_i, x_i) + \log p(\eta_i \mid \theta) \\
+& = L_i(g_i(\eta_i))
++ \log p(\eta_i \mid \theta)
+\end{aligned}
+$$
+
+where:
+
+- $g_i$ returns the vector of IPREDs $\mu_i$ and the residual standard deviations $\sigma_i$ (constant in the additive error model case), at all observed time points, and
+- $L_i$ is the log probability of $y_i$ given $\mu_i$ and $\sigma_i$
+
+## General FOCE(I)
+
+$g_i$ is usually the most expensive component of $\log f_i$, because it often involves solving a differential equation. So let's approximate it!
+
+### First order Taylor series expansion
+
+- FO
+\vspace{-3mm}
+$$
+g_i(\eta_i) = g_i(0) + \frac{dg_i}{d\eta_i}(0) \cdot \eta_i
+$$
+- FOCE(I)
+\vspace{-3mm}
+$$
+g_i(\eta_i) = g_i(\text{EBE}_i) + \frac{dg_i}{d\eta_i}(\text{EBE}_i) \cdot (\eta_i - \text{EBE}_i)
+$$
+
+## General FOCE(I)
+
+### Summary
+
+- FOCE(I) ensures that the approximation error in $g_i$ (and $\log f_i$ by extension) is low in the proximity of $\text{EBE}_i$. 
+\vspace{2mm}
+- FO does not ensure that so it only works well if:
+    \vspace{2mm}
+    - $\text{EBE}_i$ is not far from 0, or
+    \vspace{2mm}
+    - $g_i$ is close to linear in the interval $[0, \text{EBE}_i]$.
+\vspace{2mm}
+- FO requires a correction term in the Laplace method because the gradient of $\log f_i$ wrt $\eta_i$ at $\eta_i = 0$ is not 0.
+
+## General FOCE(I)
+
+### Chain rule for Hessians
+
+$$
+(L_i \cdot g_i)''(\eta_i) = \frac{dg_i}{d\eta_i}^T \cdot \frac{\partial^2 L_i}{\partial g_i \cdot \partial g_i^T} \cdot \frac{dg_i}{d\eta_i} + \sum_{t = 1}^{d} \Bigg( \frac{\partial L_i}{\partial g_{i,t}} \cdot \underbrace{\frac{\partial^2 g_{i,t}}{\partial \eta_i \cdot \partial \eta_i^T}}_{\text{0 if linear}} \Bigg)
+$$
+
+where $d$ is twice the number of observed time points (corresponding to $\mu_i$ and $\sigma_i$) and $g_{i,t}$ is the $t^{th}$ component of $g_i$.
+
+## General FOCE(I)
+
+### Summary
+
+If $g_i$ is linear in $\eta_i$:
+
+\vspace{2mm}
+- $\frac{\partial^2 g_{i,t}}{\partial \eta_i \cdot \partial \eta_i^T} = 0$
+\vspace{2mm}
+- $J_i = \frac{\partial g_i}{\partial \eta_i}$ is constant
+\vspace{2mm}
+
+The Hessian simplifies to:
+\vspace{-2mm}
+$$
+(L_i \cdot g_i)''(\eta_i) = J_i^T \cdot \frac{\partial^2 L_i}{\partial g_i \cdot \partial g_i^T} \cdot J_i
+$$
+
+## General FOCE(I)
+
+- One surprising advantage of FOCE(I) is that the Hessian approximation is often negative definite even when the exact Hessian is singular or not well defined at $\eta_i = \eta_i^*$.
+
+![](./figures/lag_plt.png){width=200 fig-align="center"}
+
+## General FOCE(I)
+
+- $J_i$ can be computed for each subject using finite difference at
+    \vspace{3mm}
+    - $\eta_i = 0$ for FO, or
+    \vspace{3mm}
+    - $\eta_i = \text{EBE}_i$ for FOCE(I)
+\vspace{3mm}
+- For many data distributions, $\frac{\partial^2 L_i}{\partial g_i \cdot \partial g_i^T}$ is both diagonal and has a closed form. Doesn't have to be Gaussian!
+
+## General FOCE(I)
+
+Recall
+$$
+\begin{aligned}
+\log f_i(\eta_i) & = \log p(y_i \mid \theta, \eta_i, x_i) + \log p(\eta_i \mid \theta) \\
+& = L_i(\underbrace{g_i(\eta_i)}_{\text{approx}})
++ \log p(\eta_i \mid \theta)
+\end{aligned}
+$$
+
+For many random effects distributions, the Hessian of $\log p(\eta_i \mid \theta)$ wrt $\eta_i$ has a closed form. Doesn't have to be Gaussian!
+
+## General FOCE(I)
+
+- Pumas FOCE supports a number of data distributions:
+    \vspace{3mm}
+    - **Continuous**: Normal, LogNormal, Gamma, Exponential, Beta
+    \vspace{3mm}
+    - **Discrete**: NegativeBinomial, Bernoulli, Binomial, Poisson, Categorical
+    \vspace{3mm}
+
+---
+
+## General FOCE(I)
+
+- Pumas supports a number of random effect distributions:
+    \vspace{1mm}​
+    - **Unbounded**: Cauchy, Gumbel, Laplace, Logistic, Normal, NormalCanon, NormalInverseGaussian, PGeneralizedGaussian, TDist
+    \vspace{1mm}​
+    - **Positive**: BetaPrime, Chi, Chisq, Erlang, Exponential, Frechet, Gamma, InverseGamma, InverseGaussian, Kolmogorov, LogNormal, NoncentralChisq, Rayleigh, Weibull
+    \vspace{1mm}​
+    - **Between 0 and 1**: Beta, LogitNormal
+    \vspace{1mm}​
+    - **Other bounded**: Uniform, Arcsine, Biweight, Cosine, Epanechnikov, LogUniform, Semicircle, SymTriangularDist, Triweight
+
+## General FOCE(I)
+
+### Summary
+
+- In Pumas, FOCE is always "with interaction".
+\vspace{3mm}
+- Use FOCE if supported, otherwise use Laplace.
+\vspace{3mm}
+- Avoid FO.
+
+# Standard error estimation
+
+## Goal
+
+Estimate the covariance matrix of the estimator $\theta^*$:
+
+$$
+\theta^* = \arg max_\theta \prod_{i=1}^N p(y_i \mid \theta, x_i)
+$$
+
+## Sandwich estimator of standard errors
+
+### Asymptotic covariance
+
+\vspace{-2mm}
+$$
+\begin{aligned}
+\theta^* & \sim \mathcal{N}(\theta_0, V) = \mathcal{N}(\theta_0, A^{-1} B A^{-1}) \\
+A & = \sum_{i=1}^N \frac{\partial^2 \log p(y_i \mid \theta, x_i)}{\partial \theta \cdot \partial \theta^T}(\theta_0) \\
+B & = \sum_{i=1}^N \frac{\partial \log p(y_i \mid \theta, x_i)}{\partial \theta}(\theta_0) \times \frac{\partial \log p(y_i \mid \theta, x_i)}{\partial \theta}(\theta_0)^T
+\end{aligned}
+$$
+where $\theta_0$ is the set of unknown true parameters.
+
+## Sandwich estimator of standard errors
+
+### Estimated covariance
+
+$$
+\begin{aligned}
+\theta^* & \stackrel{a}{\sim} \mathcal{N}(\theta_0, \hat{V}) = \mathcal{N}(\theta_0, \hat{A}^{-1} \hat{B} \hat{A}^{-1}) \\
+\hat{A} & = \sum_{i=1}^N \frac{\partial^2 \log p(y_i \mid \theta, x_i)}{\partial \theta \cdot \partial \theta^T}(\theta^*) \\
+\hat{B} & = \sum_{i=1}^N \frac{\partial \log p(y_i \mid \theta, x_i)}{\partial \theta}(\theta^*) \times \frac{\partial \log p(y_i \mid \theta, x_i)}{\partial \theta}(\theta^*)^T
+\end{aligned}
+$$
+
+## Sandwich estimator of standard errors
+
+### Standard error estiamtes
+
+The square root of the diagonal elements of $\hat{V}$ are the standard error estimates of $\theta^*$.
+
+## Sandwich estimator of standard errors
+
+### Computing $\hat{V}$
+
+- $\hat{A}$ and $\hat{B}$ can be approximated with finite difference
+\vspace{3mm}
+- $\log p(y_i \mid \theta, x_i)$ itself needs to be approximated with Laplace/FOCE/FO
+\vspace{3mm}
+- $\hat{A}^{-1} \cdot \hat{B} \cdot \hat{A}^{-1}$ is computed using a generalized eigenvalue problem.
+
+---
+
+## Sandwich estimator of standard errors
+
+### Computing $\hat{V}$
+
+Consider the following generalized eigenvalue problem:
+$$
+\begin{aligned}
+\hat{B} \cdot U & = \hat{A} \cdot U \cdot \Lambda \\
+I & = U^T \cdot \hat{A} \cdot U
+\end{aligned}
+$$
+where $U$ is the matrix of generalized eigenvectors and $\Lambda$ is the diagonal matrix of generalized eigenvalues.
+
+---
+
+## Sandwich estimator of standard errors
+
+### Computing $\hat{V}$
+
+The inverse of the matrix of eigenvectors $U$ is obtained from the following constraint on $U$:
+$$
+\begin{aligned}
+(U^{T} \cdot \hat{A}) \cdot U & = I \\
+U^{-1} & = U^{T} \cdot \hat{A}
+\end{aligned}
+$$
+
+---
+
+## Sandwich estimator of standard errors
+
+### Computing $\hat{V}$
+
+The following identity is true:
+$$
+\begin{aligned}
+\hat{B} \cdot U & = \hat{A} \cdot U \cdot \Lambda \\
+\hat{A}^{-1} \cdot \hat{B} \cdot U & = U \cdot \Lambda \\
+\hat{A}^{-1} \cdot \hat{B} & = U \cdot \Lambda \cdot U^{-1} \\
+\hat{A}^{-1} \cdot \hat{B} & = U \cdot \Lambda \cdot U^{T} \cdot \hat{A} \\
+\hat{V} = \hat{A}^{-1} \cdot \hat{B} \cdot \hat{A}^{-1} & = U \cdot \Lambda \cdot U^{T}
+\end{aligned}
+$$
+
+---
+
+## Sandwich estimator of standard errors
+
+### Failed estimator
+
+- If the computed $\hat{A}$ is: a) singular, b) near singular, or c) has negative eigenvalues, the sandwich estimator will fail.
+\vspace{1mm}
+- This is a sign of poor identifiability of at least 1 parameter and/or significant numerical errors.
+\vspace{1mm}
+- Even if a single (IIV) parameter is not identifiable given the data, $\hat{A}$ will be singular.
+\vspace{1mm}
+
+---
+
+## Sandwich estimator of standard errors
+
+### Failed estimator
+
+- Numerical errors in the finite difference or Laplace/FOCE/FO can also cause the computed approximate $\hat{A}$ to be singular (or have small negative eigenvalues) even when the exact matrix $\hat{A}$ may be only *near* singular and positive definite.
+\vspace{3mm}
+
+# Weighted residuals
+
+# Visual predictive check
+
+## Continuous VPC Procedure
+
+### Example
+
+![](./figures/cont_vpc.png){width=300 fig-align="center"}
+
+## Continuous VPC Procedure
+
+1. Simulate a synthetic population a given number of samples (`samples`, default `499`).
+\vspace{2mm}
+2. Stratify the observed and simulated populations by the stratification variable.
+\vspace{2mm}
+3. For each simulated population stratum, do smoothed quantile regression at `nnodes` nodes picked from the the data.
+    - Default quantiles: 0.1, 0.5 and 0.9.
+    - Default `nnodes`: 11
+    - Default smoothing `bandwidth`: 2.0
+
+## Continuous VPC Procedure
+
+4. Find the (hyper-)quantiles of the per-scenario population quantiles within each stratum,
+    \vspace{1mm}
+    - Hyper-quantiles:
+        \vspace{1mm}
+        - (1 - `level`) / 2
+        \vspace{1mm}
+        - 0.5 (`simquantile_medians` hidden by default)
+        \vspace{1mm}
+        - (1 + `level`) / 2
+    \vspace{1mm}
+    - Default `level`: 0.95
+\vspace{2mm}
+5. For each observed population stratum, repeat step 3.
+\vspace{2mm}
+6. For each stratum, plot the population's quantiles and the hyper-quantiles of each simulated quantile.
+
+## Time to event VPC Procedure
+
+### Example
+
+![](./figures/tte_vpc.png){width=300 fig-align="center"}
+
+## Time to event VPC Procedure
+
+1. Simulate a synthetic population a given number of samples (`samples`, default `499`). For each subject:
+    \vspace{3mm}
+    1. Evaluate the cumulative hazard function $\Lambda$ at `nT` (default 10) time points between `minT` and `maxT`.
+    \vspace{3mm}
+    2. Use a cubic spline to interpolate between the $\Lambda$ values.
+    \vspace{3mm}
+    3. Use inverse CDF transform sampling to sample the time of death from the cumulative hazard function.
+
+## Time to event VPC Procedure
+
+2. Stratify the observed and simulated populations by the stratification variable.
+\vspace{1mm}
+3. For each simulated population stratum:
+    \vspace{1mm}
+    1. Estimate the Kaplan Meier (KM) curve. $d_i$ is the number of deaths at $t_i$ and $n_i$ is the number of people at risk at time $t_i$.
+    \vspace{-2mm}
+    $$
+    \hat{S}(t) = \prod_{i:t_i<t} \Bigg(1 - \frac{d_i}{n_i} \Bigg)
+    $$
+    \vspace{-2mm}
+    2. Combine all simulated populations' KM curves into one data frame.
+    3. Do quantile regression with smoothing to get smooth curves for the quantiles at a number of nodes `nnodes` (default 11).
+
+## Time to event VPC Procedure
+
+4. For each observed population stratum, estimate the KM curve.
+\vspace{1mm}
+5. Plot the observed KM curve against the smoothed quantiles for each stratum.
+\vspace{2mm}
+
+## Time to event VPC Procedure
+
+### Inverse CDF sampling
+
+- If $R \sim \text{Uniform}(0, 1)$, then $-\log(1 - R) \sim \text{Exponential}(1.0)$.
+\vspace{-2mm}
+$$
+\begin{aligned}
+F(t) & \leq R \\ 
+1 - S(t) & \leq R \\
+\exp(-\Lambda(t)) & \geq 1 - R \\
+\Lambda(t) & \leq -\log(1 - R)
+\end{aligned}
+$$
+\vspace{-3mm}
+- The sample $t$ is obtained using a root finding algorithm to find the root for $\Lambda(t) = -\log(1 - R)$.
+
+# Time to event models
+
+## Definitions
+
+- Instantaneous hazard
+$$
+\lambda(t) > 0
+$$
+- Cumulative hazard
+$$
+\Lambda(t) = \int_0^t \lambda(t') \, dt'
+$$
+- Survival function: probability of survival up to time $t$
+$$
+S(t) = \exp(-\Lambda(t))
+$$
+
+## Definitions
+
+- Failure function: probability of death/failure before time $t$
+$$
+F(t) = 1 - S(t)
+$$
+- Probability density function of time of death $t$
+$$
+f(t) = \frac{dF}{dt} = \lambda(t) \cdot \exp(-\Lambda(t))
+$$
+- Expected time of death $E[t]$
+$$
+E[t] = \int_0^\infty t \cdot f(t) \, dt = \int_0^\infty S(t) \, dt
+$$
+
+## Log likelihood
+
+The log likelihood for censored survival data is given by the following 2 formulas:
+
+- For censored subjects at time $t$ (patient survived until time $t$) 
+$$
+\log \text{likelihood} = \log S(t) = -\Lambda(t)
+$$
+- For subjects dead at time $t$  
+$$
+\log \text{likelihood} = \log f(t) = \log \lambda(t) -\Lambda(t)
+$$
