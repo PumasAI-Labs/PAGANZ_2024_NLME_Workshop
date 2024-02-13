@@ -217,29 +217,41 @@ OFV_laplace = (-2 * loglikelihood(fpm_laplace) - n * log(2π))
 
 ## Visual predictive check ##
 
-vpc_res_conc = vpc(fpm; 
-                    observations = [:conc],
-                    ensemblealg = EnsembleThreads())
+vpc_res_conc = vpc(
+    fpm; 
+    observations = [:conc],
+    ensemblealg = EnsembleThreads(),
+)
 warf_vpc = vpc_plot(
     vpc_res_conc;
     simquantile_medians = true,
     observations = false,
-    axis = (xlabel = "Time (h)", ylabel = "Warfarin Concentration (mg/L)",
-            xticks = 0:12:120)
+    include_legend = false,
+    axis = (
+        xlabel = "Time (h)",
+        ylabel = "Warfarin Concentration (mg/L)",
+        xticks = 0:12:120,
+    )
 )
-figurelegend(warf_vpc, position = :b, orientation = :horizontal, nbanks = 3, tellwidth = true)
+figurelegend(warf_vpc, position=:b, orientation=:horizontal, nbanks=3, tellwidth=true)
 warf_vpc
 
-vpc_res_pca = vpc(fpm; 
-                  observations = [:pca],
-                  ensemblealg = EnsembleThreads())
+vpc_res_pca = vpc(
+    fpm; 
+    observations = [:pca],
+    ensemblealg = EnsembleThreads(),
+)
 
 pca_vpc = vpc_plot(
     vpc_res_pca;
     simquantile_medians = true,
     observations = false,
-    axis=(xlabel="Time (h)", ylabel="PCA",
-        xticks=0:12:150)
+    include_legend = false,
+    axis = (
+        xlabel="Time (h)",
+        ylabel="PCA",
+        xticks=0:12:150,
+    )
 )
 figurelegend(pca_vpc, position=:b, orientation=:horizontal, nbanks=3, tellwidth=true)
 pca_vpc
