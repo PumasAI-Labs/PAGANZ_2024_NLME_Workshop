@@ -215,7 +215,6 @@ lag_η = -1.0:0.01:5.0
 lag_plt = data((lag_η = lag_η, ll = ll_func.(lag_η, subj_ind))) * 
     mapping(:lag_η, :ll => "Conditional log likelihood of subject $subj_ind") * 
     AOG.visual(Lines) |> draw
-# save("./supporting_material/lag_plt.png", lag_plt)
 
 OFV_laplace = (-2 * loglikelihood(fpm_laplace) - n * log(2π))
 
@@ -484,7 +483,8 @@ end
 # Sampling distribution covariance matrix estimation
 inf = infer(fpm) # fails
 # Bootstrap
-bts_inf = infer(fpm, Bootstrap(samples = 20))
+bts_inf = infer(fpm, Bootstrap(samples = 5))
+stderror(bts_inf)
 
 # Fixing the omegas which may not be well identifiable
 fpm_inf = fit(
@@ -497,6 +497,8 @@ fpm_inf = fit(
     optim_options = (; iterations = 0)
 )
 inf = infer(fpm_inf)
+stderror(inf)
+coeftable(inf)
 
 ## Simulation ##
 
@@ -528,7 +530,7 @@ simobs(fpm; rng)
 
 # Sample population parameters from the bootstrap samples first
 # Then sample random effects from their priors
-sims4 = simobs(bts_inf, pop, samples = 10)
+ sims4 = simobs(bts_inf, pop, samples = 5)
 # or
 @time sims4 = [simobs(bts_inf, pop, samples = 1)[1] for _ in 1:1000]
 
@@ -634,15 +636,16 @@ bayes_fpm = fit(
     pop,
     init_params(bayes_model),
     BayesMCMC(
-        nsamples = 500,
-        nadapts = 250,
+        # make these numbers larger in a real run, e.g 2000 and 1000
+        nsamples = 200,
+        nadapts = 100,
         nchains = 4,
         # remove the following option in a real run!
         alg = GeneralizedNUTS(max_depth = 3),
         diffeq_options = (; alg = Pumas.Rodas5())
     ),
 );
-bayes_fpm_samples = Pumas.discard(bayes_fpm, burnin = 250)
+bayes_fpm_samples = Pumas.discard(bayes_fpm, burnin = 100)
 mean(bayes_fpm_samples)
 coef(fpm)
 

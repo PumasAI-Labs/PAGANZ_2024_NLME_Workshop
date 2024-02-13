@@ -132,9 +132,11 @@ sf_sld = subject_fits(
     separate = true,
     ids = string.(1:16),
     facet = (combinelabels = true,),
-    axis = (xlabel = "Time (days)", xticklabelrotation=pi / 4,)
+    axis = (
+        xlabel = "Time (days)",
+        xticklabelrotation = pi / 4,
+    )
 )
-# figurelegend(sf_sld, orientation=:horizontal)
 sf_sld
 
 tgd_vpc_res = vpc(
