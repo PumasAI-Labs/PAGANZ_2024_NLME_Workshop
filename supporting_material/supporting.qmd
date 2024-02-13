@@ -3,8 +3,8 @@ title: "PAGANZ 2024 Pumas Workshop"
 author: 
   - Mohamed Tarek
 institute: 
-  - \inst{1} PumasAI Inc.
-  - \inst{2} University of Sydney Business School
+  - \inst{} Senior Product Engineer at PumasAI Inc.
+  - \inst{} Research Affiliate at University of Sydney Business School
 format:
     beamer:
         aspectratio: 32
@@ -393,7 +393,7 @@ $$
 
 ### Example
 
-![](./figures/cont_vpc.png){width=300 fig-align="center"}
+![](./figures/cont_vpc.png){width=220 fig-align="center"}
 
 ## Continuous VPC Procedure
 
@@ -428,7 +428,7 @@ $$
 
 ### Example
 
-![](./figures/tte_vpc.png){width=300 fig-align="center"}
+![](./figures/tte_vpc.png){width=220 fig-align="center"}
 
 ## Time to event VPC Procedure
 
