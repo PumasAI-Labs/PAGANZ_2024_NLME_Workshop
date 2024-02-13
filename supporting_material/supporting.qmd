@@ -10,6 +10,8 @@ format:
         aspectratio: 32
         navigation: horizontal
         theme: Antibes
+        toc: true
+        toc-title: Contents
         header-includes: |
             \logo{
             \includegraphics[width=2cm]{./figures/Pumas_AI_Primary_Black_1098x398.png}
@@ -385,15 +387,13 @@ $$
 - Numerical errors in the finite difference or Laplace/FOCE/FO can also cause the computed approximate $\hat{A}$ to be singular (or have small negative eigenvalues) even when the exact matrix $\hat{A}$ may be only *near* singular and positive definite.
 \vspace{3mm}
 
-# Weighted residuals
+<!-- # Weighted residuals -->
 
-# Visual predictive check
+# Continuous Visual Predictive Check
 
-## Continuous VPC Procedure
+## Example
 
-### Example
-
-![](./figures/cont_vpc.png){width=220 fig-align="center"}
+![](./figures/cont_vpc.png){width=300 fig-align="center"}
 
 ## Continuous VPC Procedure
 
@@ -423,6 +423,51 @@ $$
 5. For each observed population stratum, repeat step 3.
 \vspace{2mm}
 6. For each stratum, plot the population's quantiles and the hyper-quantiles of each simulated quantile.
+
+# Time to event models
+
+## Definitions
+
+- Instantaneous hazard
+$$
+\lambda(t) > 0
+$$
+- Cumulative hazard
+$$
+\Lambda(t) = \int_0^t \lambda(t') \, dt'
+$$
+- Survival function: probability of survival up to time $t$
+$$
+S(t) = \exp(-\Lambda(t))
+$$
+
+## Definitions
+
+- Failure function: probability of death/failure before time $t$
+$$
+F(t) = 1 - S(t)
+$$
+- Probability density function of time of death $t$
+$$
+f(t) = \frac{dF}{dt} = \lambda(t) \cdot \exp(-\Lambda(t))
+$$
+- Expected time of death $E[t]$
+$$
+E[t] = \int_0^\infty t \cdot f(t) \, dt = \int_0^\infty S(t) \, dt
+$$
+
+## Log likelihood
+
+The log likelihood for censored survival data is given by the following 2 formulas:
+
+- For censored subjects at time $t$ (patient survived until time $t$) 
+$$
+\log \text{likelihood} = \log S(t) = -\Lambda(t)
+$$
+- For subjects dead at time $t$  
+$$
+\log \text{likelihood} = \log f(t) = \log \lambda(t) -\Lambda(t)
+$$
 
 ## Time to event VPC Procedure
 
@@ -478,48 +523,3 @@ F(t) & \leq R \\
 $$
 \vspace{-3mm}
 - The sample $t$ is obtained using a root finding algorithm to find the root for $\Lambda(t) = -\log(1 - R)$.
-
-# Time to event models
-
-## Definitions
-
-- Instantaneous hazard
-$$
-\lambda(t) > 0
-$$
-- Cumulative hazard
-$$
-\Lambda(t) = \int_0^t \lambda(t') \, dt'
-$$
-- Survival function: probability of survival up to time $t$
-$$
-S(t) = \exp(-\Lambda(t))
-$$
-
-## Definitions
-
-- Failure function: probability of death/failure before time $t$
-$$
-F(t) = 1 - S(t)
-$$
-- Probability density function of time of death $t$
-$$
-f(t) = \frac{dF}{dt} = \lambda(t) \cdot \exp(-\Lambda(t))
-$$
-- Expected time of death $E[t]$
-$$
-E[t] = \int_0^\infty t \cdot f(t) \, dt = \int_0^\infty S(t) \, dt
-$$
-
-## Log likelihood
-
-The log likelihood for censored survival data is given by the following 2 formulas:
-
-- For censored subjects at time $t$ (patient survived until time $t$) 
-$$
-\log \text{likelihood} = \log S(t) = -\Lambda(t)
-$$
-- For subjects dead at time $t$  
-$$
-\log \text{likelihood} = \log f(t) = \log \lambda(t) -\Lambda(t)
-$$
