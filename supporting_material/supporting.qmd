@@ -310,7 +310,7 @@ Congratulations, you have been doing ML this whole time!
 \vspace{2mm}
 - The weighted residual is
 $$
-\text{WRES}_{i,t} = \frac{y_{i,t} - E[y_{i,t} \mid x_i]}{\sqrt{Var[y_{i,t} \mid x_i]}} \sim \mathcal{N}(0, 1)
+\text{WRES}_{i,t} = \frac{y_{i,t} - E[y_{i,t} \mid x_i]}{\sqrt{\text{Var}[y_{i,t} \mid x_i]}} \sim \mathcal{N}(0, 1)
 $$
 \vspace{-1mm}
 - **Problem**: $p(y_i \mid x_i, \theta)$ (in general) has no closed form mean and variance.
@@ -337,6 +337,19 @@ $$
 \mu_i(\eta_i) & \approx \mu_i(\text{EBE}_i) + \frac{d\mu_i}{d\eta_i}(\text{EBE}_i) \cdot (\eta_i - \text{EBE}_i) \\
 \sigma_i(\eta_i) & \approx \sigma_i(\text{EBE}_i) + \underbrace{\frac{d\sigma_i}{d\eta_i}(\text{EBE}_i)}_{\neq 0 \text{ in general}} \cdot (\eta_i - \text{EBE}_i)
 \end{aligned}
+$$
+
+## Approximate distribution of response
+
+### Refresh
+
+For dependent random variables
+$$
+E(X \cdot Y) = E[X] \cdot E[Y] + \text{Cov}[X, Y]
+$$
+For indenpendent random variables
+$$
+\text{Var}[X \cdot Y] = \text{Var}[X] \cdot \text{Var}[Y] + \text{Var}[X] \cdot E[Y]^2 + E[X]^2 \cdot \text{Var}[Y]
 $$
 
 ## Approximate distribution of response
@@ -369,8 +382,8 @@ $$
 \vspace{-3mm}
 $$
 \begin{aligned}
-Var[\mu_i] & \approx \frac{d\mu_i}{d\eta_i}(0) \cdot \Omega \cdot \frac{d\mu_i}{d\eta_i}(0)^T \\
-Var[\sigma_i] & \approx \frac{d\sigma_i}{d\eta_i}(0) \cdot \Omega \cdot \frac{d\sigma_i}{d\eta_i}(0)^T
+\text{Var}[\mu_i] & \approx \frac{d\mu_i}{d\eta_i}(0) \cdot \Omega \cdot \frac{d\mu_i}{d\eta_i}(0)^T \\
+\text{Var}[\sigma_i] & \approx \frac{d\sigma_i}{d\eta_i}(0) \cdot \Omega \cdot \frac{d\sigma_i}{d\eta_i}(0)^T
 \end{aligned}
 $$
 \vspace{-1mm}
@@ -378,8 +391,8 @@ $$
 \vspace{-3mm}
 $$
 \begin{aligned}
-Var[\mu_i] & \approx \frac{d\mu_i}{d\eta_i}(\text{EBE}_i) \cdot \Omega \cdot \frac{d\mu_i}{d\eta_i}(\text{EBE}_i)^T \\
-Var[\sigma_i] & \approx \frac{d\sigma_i}{d\eta_i}(\text{EBE}_i) \cdot \Omega \cdot \frac{d\sigma_i}{d\eta_i}(\text{EBE}_i)^T
+\text{Var}[\mu_i] & \approx \frac{d\mu_i}{d\eta_i}(\text{EBE}_i) \cdot \Omega \cdot \frac{d\mu_i}{d\eta_i}(\text{EBE}_i)^T \\
+\text{Var}[\sigma_i] & \approx \frac{d\sigma_i}{d\eta_i}(\text{EBE}_i) \cdot \Omega \cdot \frac{d\sigma_i}{d\eta_i}(\text{EBE}_i)^T
 \end{aligned}
 $$
 
@@ -409,9 +422,9 @@ $$
 \vspace{-3mm}
 $$
 \begin{aligned}
-Var[y_{i,t} \mid x_i] & = Var[\mu_{i,t}] + Var[\sigma_{i,t} \cdot \epsilon_{i,t}] - \underbrace{Cov[\mu_{i,t}, \sigma_{i,t} \cdot \epsilon_{i,t}]}_{0} \\
-& = Var[\mu_{i,t}] + Var[\sigma_{i,t} \cdot \epsilon_{i,t}] \\
-& = Var[\mu_{i,t}] + Var[\sigma_{i,t}] + E[\sigma_{i,t}]^2
+\text{Var}[y_{i,t} \mid x_i] & = \text{Var}[\mu_{i,t}] + \text{Var}[\sigma_{i,t} \cdot \epsilon_{i,t}] - \underbrace{\text{Cov}[\mu_{i,t}, \sigma_{i,t} \cdot \epsilon_{i,t}]}_{0} \\
+& = \text{Var}[\mu_{i,t}] + \text{Var}[\sigma_{i,t} \cdot \epsilon_{i,t}] \\
+& = \text{Var}[\mu_{i,t}] + \text{Var}[\sigma_{i,t}] + E[\sigma_{i,t}]^2
 \end{aligned}
 $$
 
@@ -419,7 +432,7 @@ $$
 
 $$
 \begin{aligned}
-Cov[\mu_{i,t}, \sigma_{i,t} \cdot \epsilon_{i,t}] & = \overbrace{E[\mu_{i,t} \cdot \sigma_{i,t} \cdot \epsilon_{i,t}]}^{0} − E[\mu_{i,t}] \cdot \overbrace{E[\sigma_{i,t} \cdot \epsilon_{i,t}]}^{0} \\
+\text{Cov}[\mu_{i,t}, \sigma_{i,t} \cdot \epsilon_{i,t}] & = \overbrace{E[\mu_{i,t} \cdot \sigma_{i,t} \cdot \epsilon_{i,t}]}^{0} − E[\mu_{i,t}] \cdot \overbrace{E[\sigma_{i,t} \cdot \epsilon_{i,t}]}^{0} \\
 E[\mu_{i,t} \cdot \sigma_{i,t} \cdot \epsilon_{i,t}] & = E[\mu_{i,t} \cdot \sigma_{i,t}] \cdot \overbrace{E[\epsilon_{i,t}]}^{0} = 0 \\
 E[\sigma_{i,t} \cdot \epsilon_{i,t}] & = E[\sigma_{i,t}] \cdot \overbrace{E[\epsilon_{i,t}]}^{0} = 0
 \end{aligned}
@@ -429,9 +442,9 @@ $$
 
 ### Summary
 
-After the FO/FOCEI approximation, we were able to obtain closed form approximations of $E[y_{i,t} \mid x_i]$ and $Var[y_{i,t} \mid x_i]$.
+After the FO/FOCEI approximation, we were able to obtain closed form approximations of $E[y_{i,t} \mid x_i]$ and $\text{Var}[y_{i,t} \mid x_i]$.
 $$
-\text{WRES}_{i,t} = \frac{y_{i,t} - E[y_{i,t} \mid x_i]}{\sqrt{Var[y_{i,t} \mid x_i]}}
+\text{WRES}_{i,t} = \frac{y_{i,t} - E[y_{i,t} \mid x_i]}{\sqrt{\text{Var}[y_{i,t} \mid x_i]}}
 $$
 
 # Standard error estimation
@@ -673,8 +686,6 @@ $$
 \vspace{1mm}
 5. Plot the observed KM curve against the smoothed quantiles for each stratum.
 \vspace{2mm}
-
-## Time to event VPC procedure
 
 ## Inverse CDF sampling
 
