@@ -174,6 +174,10 @@ coefficients_table(fpm)
 ics = icoef(fpm)
 ebes = empirical_bayes(fpm)
 
+loglikelihood(fpm)
+aic(fpm)
+bic(fpm)
+
 nlls = findinfluential(fpm)
 @rsubset df2 :ID == "15"
 
