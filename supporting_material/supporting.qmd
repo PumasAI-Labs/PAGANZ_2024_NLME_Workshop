@@ -21,17 +21,17 @@ format:
 
 # NLME fitting algorithms
 
-## NLME Notation
+## NLME notation
 
 Assume there are 3 subjects
 
 ![](./figures/nlme.jpg){width=350 fig-align="center"}
 
-## NLME Notation
+## NLME notation
 
 ![](./figures/pumas_nlme.jpg){width=200 fig-align="center"}
 
-## NLME Notation
+## NLME notation
 
 ::: {.incremental}
 
@@ -51,7 +51,7 @@ Assume there are 3 subjects
 
 ---
 
-## NLME Notation
+## NLME notation
 
 ::: {.incremental}
 
@@ -389,13 +389,13 @@ $$
 
 <!-- # Weighted residuals -->
 
-# Continuous Visual Predictive Check
+# Continuous visual predictive check
 
 ## Example
 
 ![](./figures/cont_vpc.png){width=300 fig-align="center"}
 
-## Continuous VPC Procedure
+## Continuous VPC procedure
 
 1. Simulate a synthetic population a given number of samples (`samples`, default `499`).
 \vspace{2mm}
@@ -406,7 +406,7 @@ $$
     - Default `nnodes`: 11
     - Default smoothing `bandwidth`: 2.0
 
-## Continuous VPC Procedure
+## Continuous VPC procedure
 
 4. Find the (hyper-)quantiles of the per-scenario population quantiles within each stratum,
     \vspace{1mm}
@@ -469,13 +469,13 @@ $$
 \log \text{likelihood} = \log f(t) = \log \lambda(t) -\Lambda(t)
 $$
 
-## Time to event VPC Procedure
+## Time to event VPC procedure
 
 ### Example
 
 ![](./figures/tte_vpc.png){width=220 fig-align="center"}
 
-## Time to event VPC Procedure
+## Time to event VPC procedure
 
 1. Simulate a synthetic population a given number of samples (`samples`, default `499`). For each subject:
     \vspace{3mm}
@@ -485,7 +485,7 @@ $$
     \vspace{3mm}
     3. Use inverse CDF transform sampling to sample the time of death from the cumulative hazard function.
 
-## Time to event VPC Procedure
+## Time to event VPC procedure
 
 2. Stratify the observed and simulated populations by the stratification variable.
 \vspace{1mm}
@@ -500,16 +500,16 @@ $$
     2. Combine all simulated populations' KM curves into one data frame.
     3. Do quantile regression with smoothing to get smooth curves for the quantiles at a number of nodes `nnodes` (default 11).
 
-## Time to event VPC Procedure
+## Time to event VPC procedure
 
 4. For each observed population stratum, estimate the KM curve.
 \vspace{1mm}
 5. Plot the observed KM curve against the smoothed quantiles for each stratum.
 \vspace{2mm}
 
-## Time to event VPC Procedure
+## Time to event VPC procedure
 
-### Inverse CDF sampling
+## Inverse CDF sampling
 
 - If $R \sim \text{Uniform}(0, 1)$, then $-\log(1 - R) \sim \text{Exponential}(1.0)$.
 \vspace{-2mm}
