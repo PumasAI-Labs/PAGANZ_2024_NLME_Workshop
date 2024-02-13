@@ -13,6 +13,7 @@ format:
         toc: true
         toc-title: Contents
         header-includes: |
+            \usepackage{mathtools}
             \logo{
             \includegraphics[width=2cm]{./figures/Pumas_AI_Primary_Black_1098x398.png}
             }
@@ -150,17 +151,17 @@ where:
 
 $g_i$ is usually the most expensive component of $\log f_i$, because it often involves solving a differential equation. So let's approximate it!
 
-### First order Taylor series expansion
+### First order Taylor series approximation
 
 - FO
 \vspace{-3mm}
 $$
-g_i(\eta_i) = g_i(0) + \frac{dg_i}{d\eta_i}(0) \cdot \eta_i
+g_i(\eta_i) \approx g_i(0) + \frac{dg_i}{d\eta_i}(0) \cdot \eta_i
 $$
 - FOCE(I)
 \vspace{-3mm}
 $$
-g_i(\eta_i) = g_i(\text{EBE}_i) + \frac{dg_i}{d\eta_i}(\text{EBE}_i) \cdot (\eta_i - \text{EBE}_i)
+g_i(\eta_i) \approx g_i(\text{EBE}_i) + \frac{dg_i}{d\eta_i}(\text{EBE}_i) \cdot (\eta_i - \text{EBE}_i)
 $$
 
 ## General FOCE(I)
@@ -266,6 +267,172 @@ For many random effects distributions, the Hessian of $\log p(\eta_i \mid \theta
 - Use FOCE if supported, otherwise use Laplace.
 \vspace{3mm}
 - Avoid FO.
+
+# Weighted residuals
+
+## Distribution of response
+
+Assuming Gaussian random effects and error model, for each subject $i$, the conditional distribution $p(y_i \mid x_i, \theta)$ is given by:
+$$
+\begin{aligned}
+\eta_i & \sim \mathcal{N}(0, \Omega) \\
+(\mu_i, \sigma_i) & = g(\eta_i; x_i) \\
+y_i & \sim \mathcal{N}(\mu_i, \sigma_i)
+\end{aligned}
+$$
+where $g(\eta_i; x_i) = g_i(\eta_i)$ (same functional form $g$ for all subjects).
+
+## Distribution of response
+
+Alternative representation
+$$
+\begin{aligned}
+\eta_i & \sim \mathcal{N}(0, \Omega) \\
+(\mu_i, \sigma_i) & = g(\eta_i; x_i) \\
+\epsilon_{i,t} & \sim \mathcal{N}(0, 1) \\
+y_{i,t} & = \mu_{i,t} + \sigma_{i,t} \cdot \epsilon_{i,t}
+\end{aligned}
+$$
+where the $t$ is the index for the number of observations per subject.
+
+## Distribution of response
+
+The machine learning (ML) community call this class of models:
+
+- (Conditional) generative models, or
+- Latent variable models
+
+Congratulations, you have been doing ML this whole time!
+
+## Distribution of response
+
+- $p(y_i \mid x_i, \theta)$ is the distribution we sample from when doing a visual predictive check (VPC) to compare the distribtuion of simulated $y_i$ to the distribution of observed $y_i$.
+\vspace{2mm}
+- The weighted residual is
+$$
+\text{WRES}_{i,t} = \frac{y_{i,t} - E[y_{i,t} \mid x_i]}{\sqrt{Var[y_{i,t} \mid x_i]}} \sim \mathcal{N}(0, 1)
+$$
+\vspace{-1mm}
+- **Problem**: $p(y_i \mid x_i, \theta)$ (in general) has no closed form mean and variance.
+\vspace{2mm}
+- **Solution**: let's approximate it!
+
+## Approximate distribution of response
+
+First order Taylor series approximation
+
+- FO
+\vspace{-3mm}
+$$
+\begin{aligned}
+\mu_i(\eta_i) & \approx \mu_i(0) + \frac{d\mu_i}{d\eta_i}(0) \cdot \eta_i \\
+\sigma_i(\eta_i) & \approx \sigma_i(0) + \frac{d\sigma_i}{d\eta_i}(0) \cdot \eta_i
+\end{aligned}
+$$
+\vspace{-1mm}
+- FOCEI
+\vspace{-3mm}
+$$
+\begin{aligned}
+\mu_i(\eta_i) & \approx \mu_i(\text{EBE}_i) + \frac{d\mu_i}{d\eta_i}(\text{EBE}_i) \cdot (\eta_i - \text{EBE}_i) \\
+\sigma_i(\eta_i) & \approx \sigma_i(\text{EBE}_i) + \underbrace{\frac{d\sigma_i}{d\eta_i}(\text{EBE}_i)}_{\neq 0 \text{ in general}} \cdot (\eta_i - \text{EBE}_i)
+\end{aligned}
+$$
+
+## Approximate distribution of response
+
+### Approximate means
+
+- FO
+\vspace{-3mm}
+$$
+\begin{aligned}
+E[\mu_i] & \approx \mu_i(0) \\
+E[\sigma_i] & \approx \sigma_i(0)
+\end{aligned}
+$$
+\vspace{-1mm}
+- FOCEI
+\vspace{-3mm}
+$$
+\begin{aligned}
+E[\mu_i] & \approx \mu_i(\text{EBE}_i) - \frac{d\mu_i}{d\eta_i}(\text{EBE}_i) \cdot \text{EBE}_i \\
+E[\sigma_i] & \approx \sigma_i(\text{EBE}_i) - \frac{d\sigma_i}{d\eta_i}(\text{EBE}_i) \cdot \text{EBE}_i
+\end{aligned}
+$$
+
+## Approximate distribution of response
+
+### Approximate variances
+
+- FO
+\vspace{-3mm}
+$$
+\begin{aligned}
+Var[\mu_i] & \approx \frac{d\mu_i}{d\eta_i}(0) \cdot \Omega \cdot \frac{d\mu_i}{d\eta_i}(0)^T \\
+Var[\sigma_i] & \approx \frac{d\sigma_i}{d\eta_i}(0) \cdot \Omega \cdot \frac{d\sigma_i}{d\eta_i}(0)^T
+\end{aligned}
+$$
+\vspace{-1mm}
+- FOCEI
+\vspace{-3mm}
+$$
+\begin{aligned}
+Var[\mu_i] & \approx \frac{d\mu_i}{d\eta_i}(\text{EBE}_i) \cdot \Omega \cdot \frac{d\mu_i}{d\eta_i}(\text{EBE}_i)^T \\
+Var[\sigma_i] & \approx \frac{d\sigma_i}{d\eta_i}(\text{EBE}_i) \cdot \Omega \cdot \frac{d\sigma_i}{d\eta_i}(\text{EBE}_i)^T
+\end{aligned}
+$$
+
+## Approximate distribution of response
+
+Recall
+$$
+y_{i,t} = \mu_{i,t} + \sigma_{i,t} \cdot \epsilon_{i,t}
+$$
+
+### Mean
+$$
+\begin{aligned}
+E[y_{i,t} \mid x_i] & = E[\mu_{i,t}] + E[\sigma_{i,t}] \cdot \overbrace{E[\epsilon_{i,t}]}^{0} \\
+& = E[\mu_{i,t}]
+\end{aligned}
+$$
+
+## Approximate distribution of response
+
+Recall
+$$
+y_{i,t} = \mu_{i,t} + \sigma_{i,t} \cdot \epsilon_{i,t}
+$$
+
+### Variance
+\vspace{-3mm}
+$$
+\begin{aligned}
+Var[y_{i,t} \mid x_i] & = Var[\mu_{i,t}] + Var[\sigma_{i,t} \cdot \epsilon_{i,t}] - \underbrace{Cov[\mu_{i,t}, \sigma_{i,t} \cdot \epsilon_{i,t}]}_{0} \\
+& = Var[\mu_{i,t}] + Var[\sigma_{i,t} \cdot \epsilon_{i,t}] \\
+& = Var[\mu_{i,t}] + Var[\sigma_{i,t}] + E[\sigma_{i,t}]^2
+\end{aligned}
+$$
+
+## Approximate distribution of response
+
+$$
+\begin{aligned}
+Cov[\mu_{i,t}, \sigma_{i,t} \cdot \epsilon_{i,t}] & = \overbrace{E[\mu_{i,t} \cdot \sigma_{i,t} \cdot \epsilon_{i,t}]}^{0} − E[\mu_{i,t}] \cdot \overbrace{E[\sigma_{i,t} \cdot \epsilon_{i,t}]}^{0} \\
+E[\mu_{i,t} \cdot \sigma_{i,t} \cdot \epsilon_{i,t}] & = E[\mu_{i,t} \cdot \sigma_{i,t}] \cdot \overbrace{E[\epsilon_{i,t}]}^{0} = 0 \\
+E[\sigma_{i,t} \cdot \epsilon_{i,t}] & = E[\sigma_{i,t}] \cdot \overbrace{E[\epsilon_{i,t}]}^{0} = 0
+\end{aligned}
+$$
+
+## Approximate distribution of response
+
+### Summary
+
+After the FO/FOCEI approximation, we were able to obtain closed form approximations of $E[y_{i,t} \mid x_i]$ and $Var[y_{i,t} \mid x_i]$.
+$$
+\text{WRES}_{i,t} = \frac{y_{i,t} - E[y_{i,t} \mid x_i]}{\sqrt{Var[y_{i,t} \mid x_i]}}
+$$
 
 # Standard error estimation
 
@@ -511,7 +678,7 @@ $$
 
 ## Inverse CDF sampling
 
-- If $R \sim \text{Uniform}(0, 1)$, then $-\log(1 - R) \sim \text{Exponential}(1.0)$.
+- If $R \sim \text{Uniform}(0, 1)$, then $-\log(1 - R) \sim \text{Exponential}(1)$.
 \vspace{-2mm}
 $$
 \begin{aligned}
