@@ -137,17 +137,18 @@ sf_sld = subject_fits(
 # figurelegend(sf_sld, orientation=:horizontal)
 sf_sld
 
-tgd_vpc_res = vpc(tgd_fpm, 
-                  observations = [:SLD], 
-                  bandwidth = 20,
-                ensemblealg = EnsembleThreads())
+tgd_vpc_res = vpc(
+    tgd_fpm, 
+    observations = [:SLD], 
+    bandwidth = 20,
+    ensemblealg = EnsembleThreads(),
+)
 # not a very good TGD model!
 vpc_plot(
     tgd_vpc_res;
     simquantile_medians = true,
     observations = false,
     axis = (xlabel = "Time (days)", ylabel  = "Sum of Longest Diameter"),
-
 )
 
 os_model = @model begin
@@ -205,9 +206,12 @@ os_fpm = fit(
     checkidentification = false,
     optim_options = (iterations = 0,),
 )
-vpc_res_os = vpc(os_fpm, 
-                observations = [:Death],
-                ensemblealg = EnsembleThreads())
-vpc_plot(vpc_res_os,
-        axis=(xlabel="Time (days)",),
-        )
+vpc_res_os = vpc(
+    os_fpm, 
+    observations = [:Death],
+    ensemblealg = EnsembleThreads(),
+)
+vpc_plot(
+    vpc_res_os;
+    axis = (xlabel = "Time (days)",),
+)
