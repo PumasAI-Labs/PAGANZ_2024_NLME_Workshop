@@ -60,7 +60,7 @@ Assume there are 3 subjects
 \vspace{3mm}
 - $p(\eta = \eta_i \mid \theta = \theta) = p(\eta_i \mid \theta)$: prior probability of the random effects $\eta_i$ given the population parameters $\theta$.
 \vspace{3mm}
-- $p(y = y_i \mid \theta = \theta, x = x_i) = p(y_i \mid \theta, x_i) = \int p(y_i \mid \theta, \eta_i, x_i) \cdot p(\eta_i \mid \theta) \, d\eta_i$: marginal likelihood of $\theta$ given subject $i$'s data $y_i$.
+- $p(y = y_i \mid \theta = \theta, x = x_i) = p(y_i \mid \theta, x_i) = \int p(y_i \mid \theta, \eta_i, x_i) \cdot p(\eta_i \mid \theta) \, d\eta_i$: marginal likelihood of $\theta$ given subject $i$'s data $(x_i, y_i)$.
 
 :::
 
@@ -144,8 +144,8 @@ $$
 
 where:
 
-- $g_i$ returns the vector of IPREDs $\mu_i$ and the residual standard deviations $\sigma_i$ (constant in the additive error model case), at all observed time points, and
-- $L_i$ is the log probability of $y_i$ given $\mu_i$ and $\sigma_i$
+- $g_i$ in the Gaussian case for example returns the vector of IPREDs $\mu_i$ and the residual standard deviations $\sigma_i$ (constant in the additive error model case), at all observed time points, and
+- $L_i$ is the log probability of $y_i$ given $g_i$
 
 ## General FOCE(I)
 
@@ -345,7 +345,10 @@ $$
 
 For dependent random variables
 $$
-E(X \cdot Y) = E[X] \cdot E[Y] + \text{Cov}[X, Y]
+\begin{aligned}
+E[X \cdot Y] & = E[X] \cdot E[Y] + \text{Cov}[X, Y] \\
+\text{Var}[X + Y] & = \text{Var}[X] + \text{Var}[Y] + 2 \text{Cov}[X, Y]
+\end{aligned}
 $$
 For indenpendent random variables
 $$
@@ -422,7 +425,7 @@ $$
 \vspace{-3mm}
 $$
 \begin{aligned}
-\text{Var}[y_{i,t} \mid x_i] & = \text{Var}[\mu_{i,t}] + \text{Var}[\sigma_{i,t} \cdot \epsilon_{i,t}] - \underbrace{\text{Cov}[\mu_{i,t}, \sigma_{i,t} \cdot \epsilon_{i,t}]}_{0} \\
+\text{Var}[y_{i,t} \mid x_i] & = \text{Var}[\mu_{i,t}] + \text{Var}[\sigma_{i,t} \cdot \epsilon_{i,t}] + 2 \cdot \underbrace{\text{Cov}[\mu_{i,t}, \sigma_{i,t} \cdot \epsilon_{i,t}]}_{0} \\
 & = \text{Var}[\mu_{i,t}] + \text{Var}[\sigma_{i,t} \cdot \epsilon_{i,t}] \\
 & = \text{Var}[\mu_{i,t}] + \text{Var}[\sigma_{i,t}] + E[\sigma_{i,t}]^2
 \end{aligned}
