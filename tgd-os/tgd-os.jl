@@ -1,9 +1,5 @@
 using Pumas, CSV, CairoMakie, PumasUtilities
 
-# change the working directory
-if isdir("PAGANZ2024")
-    cd("PAGANZ2024")
-end
 # Current working directory
 pwd()
 

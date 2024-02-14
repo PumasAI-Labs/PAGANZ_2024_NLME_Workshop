@@ -5,10 +5,6 @@ const AOG = AlgebraOfGraphics
 ## Data wrangling ##
 # Docs: https://dataframes.juliadata.org/stable/
 
-# change the working directory
-if isdir("PAGANZ2024")
-    cd("PAGANZ2024")
-end
 # Current working directory
 pwd()
 
