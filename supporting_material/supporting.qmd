@@ -468,7 +468,7 @@ $$
 $$
 \begin{aligned}
 \theta^* & \sim \mathcal{N}(\theta_0, V) = \mathcal{N}(\theta_0, A^{-1} B A^{-1}) \\
-A & = \sum_{i=1}^N \frac{\partial^2 \log p(y_i \mid \theta, x_i)}{\partial \theta \cdot \partial \theta^T}(\theta_0) \\
+A & = \sum_{i=1}^N -\frac{\partial^2 \log p(y_i \mid \theta, x_i)}{\partial \theta \cdot \partial \theta^T}(\theta_0) \\
 B & = \sum_{i=1}^N \frac{\partial \log p(y_i \mid \theta, x_i)}{\partial \theta}(\theta_0) \times \frac{\partial \log p(y_i \mid \theta, x_i)}{\partial \theta}(\theta_0)^T
 \end{aligned}
 $$
@@ -481,7 +481,7 @@ where $\theta_0$ is the set of unknown true parameters.
 $$
 \begin{aligned}
 \theta^* & \stackrel{a}{\sim} \mathcal{N}(\theta_0, \hat{V}) = \mathcal{N}(\theta_0, \hat{A}^{-1} \hat{B} \hat{A}^{-1}) \\
-\hat{A} & = \sum_{i=1}^N \frac{\partial^2 \log p(y_i \mid \theta, x_i)}{\partial \theta \cdot \partial \theta^T}(\theta^*) \\
+\hat{A} & = \sum_{i=1}^N -\frac{\partial^2 \log p(y_i \mid \theta, x_i)}{\partial \theta \cdot \partial \theta^T}(\theta^*) \\
 \hat{B} & = \sum_{i=1}^N \frac{\partial \log p(y_i \mid \theta, x_i)}{\partial \theta}(\theta^*) \times \frac{\partial \log p(y_i \mid \theta, x_i)}{\partial \theta}(\theta^*)^T
 \end{aligned}
 $$
