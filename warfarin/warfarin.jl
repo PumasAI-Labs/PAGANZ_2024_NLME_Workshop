@@ -127,7 +127,7 @@ model = @model begin
     # aliases for use in @dynamics and @derived
     @vars begin
         cp := Central / Vc
-        ratein := Ka * Depot
+        ratein :=    Ka * Depot
         pd := 1 + emax * cp / (c50 + cp)
     end
 
